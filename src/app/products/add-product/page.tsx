@@ -54,8 +54,7 @@ const AddProductPage = () => {
       //   image: "",
     },
   });
-  renderCount++;
-  console.log(watch());
+
   return (
     <DefaultLayout>
       <div className="grid grid-cols-1 gap-9 sm:grid-cols-2">

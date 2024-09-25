@@ -2,7 +2,6 @@
 import ECommerce from "@/components/Dashboard/E-commerce";
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // export const metadata: Metadata = {
 //   title:

@@ -6,6 +6,12 @@ const getCategoryData = async () => {
   return data;
 };
 
+const fetchArticleData = async (articleId: string) => {
+  const response = await fetch(`http://localhost:3000/article/${articleId}`);
+  const data = await response.json();
+  return data;
+};
+
 const deleteArticle = async (id: string) => {
   try {
     const response = await fetch(`http://localhost:3000/article/${id}`, {
@@ -50,11 +56,33 @@ const addArticle = async (article: any) => {
   return response;
 };
 
+const updateArticle = async ({
+  article,
+  id,
+}: {
+  article: FormData;
+  id: string;
+}) => {
+  const response = await fetch(`http://localhost:3000/article/${id}`, {
+    method: "PATCH",
+    body: article,
+  });
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response;
+};
+
 export const useAddArticleData = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: addArticle,
-    onSuccess: () => queryClient.invalidateQueries("category"),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["category"],
+      }),
   });
 };
 
@@ -62,6 +90,27 @@ export const useDeleteArticleData = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteArticle,
-    onSuccess: () => queryClient.invalidateQueries("category"),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["category"],
+      }),
+  });
+};
+
+export const useArticleData = (articleId: string) => {
+  return useQuery({
+    queryKey: ["article", articleId],
+    queryFn: () => fetchArticleData(articleId),
+  });
+};
+
+export const useUpdateArticleData = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateArticle,
+    onSuccess: (data, variables) =>
+      queryClient.invalidateQueries({
+        queryKey: ["article", variables.id],
+      }),
   });
 };

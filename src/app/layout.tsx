@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import Loader from "@/components/common/Loader";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { AppContextProvider } from "@/hooks/context/useContext";
 
 export default function RootLayout({
   children,
@@ -28,8 +29,10 @@ export default function RootLayout({
       <body suppressHydrationWarning={true}>
         <div className="bg-[#F8F7FC] dark:bg-boxdark-2 dark:text-bodydark">
           <QueryClientProvider client={queryClient}>
-            {loading ? <Loader /> : children}
-            <ReactQueryDevtools initialIsOpen={false} />
+            <AppContextProvider>
+              {loading ? <Loader /> : children}
+              <ReactQueryDevtools initialIsOpen={false} />
+            </AppContextProvider>
           </QueryClientProvider>
         </div>
       </body>
