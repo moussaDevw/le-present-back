@@ -99,7 +99,7 @@ export const useDeleteArticleData = () => {
 
 export const useArticleData = (articleId: string) => {
   return useQuery({
-    queryKey: ["article", articleId],
+    queryKey: ["category", articleId],
     queryFn: () => fetchArticleData(articleId),
   });
 };
@@ -108,9 +108,12 @@ export const useUpdateArticleData = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: updateArticle,
-    onSuccess: (data, variables) =>
-      queryClient.invalidateQueries({
-        queryKey: ["article", variables.id],
-      }),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["category"] });
+      queryClient.invalidateQueries({ queryKey: ["category", variables.id] });
+    },
+    onError: (error) => {
+      console.error("Erreur lors de la mise à jour de l'article:", error);
+    },
   });
 };

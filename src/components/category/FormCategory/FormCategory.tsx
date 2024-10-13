@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Loader, Upload } from "lucide-react";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import { set, useForm, useWatch } from "react-hook-form";
+import React from "react";
+import { Loader } from "lucide-react";
 import clsx from "clsx";
-import { PhotoUploadCardComponent } from "@/components/photo-upload-card";
+import { PhotoUploadCardComponent } from "@/components/PhotoUploadCard/PhotoUploadCard";
+import { useFormCategory } from "@/hooks/form/useFormCategory";
 
 interface FormCategoryProps {
-  title: string;
   onSubmit: (data: any) => void;
   isSuccess: boolean;
   isPending: boolean;
@@ -16,216 +13,73 @@ interface FormCategoryProps {
 }
 
 export const FormCategory = ({
-  title,
   onSubmit,
   isSuccess,
   isPending,
   initialValues,
   btnString,
 }: FormCategoryProps) => {
-  const [imagePreview, setImagePreview] = useState<string>("");
-
-  const schema = yup
-    .object({
-      name: yup
-        .string()
-        .required("Le nom de la catégorie est obligatoire")
-        .matches(
-          /^[a-zA-Zàâäçéèêëîïôöùûüÿ]+$/,
-          "Le nom de la catégorie ne peut contenir que des lettres.",
-        ),
-      image: initialValues
-        ? yup
-            .mixed()
-            .nullable()
-            .test(
-              "fileSize",
-              "L'image dois être inférieure à 2MB",
-              (value: any) => {
-                return value && value[0]?.size <= 2000000;
-              },
-            )
-            .test(
-              "fileType",
-              "Seuls les formats JPEG et PNG sont acceptés",
-              (value: any) => {
-                return (
-                  value && ["image/jpeg", "image/png"].includes(value[0]?.type)
-                );
-              },
-            )
-        : yup
-            .mixed()
-            .test("fileSize", "l'image est obligatoire", (value: any) => {
-              return value && value[0]?.size > 0;
-            })
-            .test(
-              "fileSize",
-              "L'image dois être inférieure à 2MB",
-              (value: any) => {
-                return value && value[0]?.size <= 2000000;
-              },
-            )
-            .test(
-              "fileType",
-              "Seuls les formats JPEG et PNG sont acceptés",
-              (value: any) => {
-                return (
-                  value && ["image/jpeg", "image/png"].includes(value[0]?.type)
-                );
-              },
-            ),
-    })
-    .required();
+  const { form } = useFormCategory(initialValues, isSuccess);
 
   const {
     register,
     handleSubmit,
-    control,
-    reset,
     setValue,
-    formState: { errors, isValid },
-  } = useForm({
-    resolver: yupResolver(schema),
-    mode: "onChange",
-    defaultValues: {
-      name: "",
-      image: "",
-    },
-  });
-
-  const nameValue = useWatch({ control, name: "name" });
-  const imageValue = useWatch({ control, name: "image" });
-  console.log(imageValue);
-  const isButtonDisabled = Boolean(nameValue) && Boolean(imagePreview.length);
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setImagePreview(imageUrl);
-    }
-  };
-
-  useEffect(() => {
-    if (initialValues?.name) {
-      setValue("name", initialValues.name);
-      setImagePreview(initialValues.image.url);
-    }
-  }, [initialValues, setValue]);
-
-  useEffect(() => {
-    if (isSuccess) {
-      reset();
-      setImagePreview("");
-    }
-  }, [isSuccess]);
+    formState: { errors },
+  } = form;
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="mb-10 grid grid-cols-1 gap-9 md:grid-cols-2"
+      className="mb-10 grid grid-cols-1 gap-9"
     >
       <div className="flex flex-col gap-9">
         {/* <!-- Input Fields --> */}
 
-        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-            <h3 className="font-medium text-black dark:text-white">{title}</h3>
-          </div>
-          <div className="flex flex-col gap-5.5 p-6.5">
-            <div>
-              <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                Nom de la catégorie
-              </label>
-              <input
-                {...register("name")}
-                type="text"
-                placeholder="Vaisselle"
-                className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-              />
-              <span className="text-red">{errors.name?.message}</span>
-            </div>
+        <div className="h-30 rounded-lg border border-stroke bg-white p-4 shadow-md dark:border-strokedark dark:bg-boxdark">
+          <div className="space-y-2">
+            <label
+              htmlFor="categoryName"
+              className="text-gray-700 dark:text-gray-200 block text-sm font-medium"
+            >
+              Nom de la catégorie
+            </label>
+            <input
+              id="categoryName"
+              {...register("name")}
+              type="text"
+              placeholder="Vaisselle"
+              className="border-gray-300 text-gray-900 dark:border-gray-600 dark:bg-gray-800 w-full rounded-md border bg-transparent px-4 py-2 transition focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:text-white dark:focus:border-primary"
+            />
+            {errors.name && (
+              <span className="text-sm text-red">{errors.name.message}</span>
+            )}
           </div>
         </div>
-
-        <button
-          className={clsx(
-            "hidden justify-center rounded bg-black px-6 py-2 font-medium text-gray hover:bg-opacity-90 sm:flex",
-            {
-              "opacity-50": !isButtonDisabled || isPending,
-            },
-          )}
-          type="submit"
-          disabled={!isButtonDisabled || isPending}
-        >
-          {isPending ? <Loader className="animate-spin" /> : btnString}
-        </button>
       </div>
 
       <section className="container mx-auto w-full items-center">
-        <div className="mx-auto max-w-sm items-center overflow-hidden rounded-lg bg-white shadow-md">
-          <div className="px-4">
-            <div
-              id="image-preview"
-              className="bg-gray-100 border-gray-400 mx-auto mb-4 max-w-sm cursor-pointer items-center rounded-lg border-2 border-dashed p-6 text-center"
-            >
-              <PhotoUploadCardComponent
-                multiple={true}
-                register={register("image")}
-              />
-              {/* <input
-                {...register("image")}
-                id="upload"
-                type="file"
-                placeholder="Vaisselle"
-                accept="image/png, image/jpeg"
-                // onChange={handleImageChange}
-                className="opacity-0"
-              />
-              {imagePreview ? (
-                <label htmlFor="upload">
-                  <img
-                    src={imagePreview}
-                    alt="Image preview"
-                    className="mx-auto max-h-48 rounded-lg"
-                  />
-                </label>
-              ) : (
-                <label htmlFor="upload" className="cursor-pointer">
-                  <Upload className="mx-auto" />
-                  <h5 className="text-gray-700 mb-2 text-xl font-bold tracking-tight">
-                    Télécharger une photo
-                  </h5>
-                  <p className="text-gray-400 text-sm font-normal md:px-6">
-                    La taille de la photo choisie doit être inférieure à{" "}
-                    <b className="text-gray-600">2mb</b>
-                  </p>
-                  <p className="text-gray-400 text-sm font-normal md:px-6">
-                    et doit être au format{" "}
-                    <b className="text-gray-600">JPG, PNG</b> .
-                  </p>
-                  <span
-                    id="filename"
-                    className="text-gray-500 bg-gray-200 z-50"
-                  ></span>
-                </label>
-              )} */}
-            </div>
-            <span className="text-red">{errors.image?.message}</span>
-          </div>
-        </div>
+        {/* <div
+          id="image-preview"
+          className="bg-gray-100 border-gray-400 mx-auto  max-w-sm cursor-pointer items-center rounded-lg border-2 border-dashed  text-center"
+        > */}
+        <PhotoUploadCardComponent
+          multiple={false}
+          register={register("image")}
+          setValue={setValue}
+        />
+        {/* </div> */}
+        <span className="text-red">{errors.image?.message}</span>
       </section>
       <button
         className={clsx(
-          "flex justify-center rounded bg-black px-6 py-2 font-medium text-gray hover:bg-opacity-90 sm:hidden",
+          "flex justify-center rounded bg-black-2 px-6 py-2 font-medium text-gray hover:bg-opacity-90",
           {
-            "opacity-50": !isButtonDisabled || isPending,
+            "opacity-50": isPending,
           },
         )}
         type="submit"
-        disabled={!isButtonDisabled || isPending}
+        disabled={isPending}
       >
         {isPending ? <Loader className="animate-spin" /> : btnString}
       </button>

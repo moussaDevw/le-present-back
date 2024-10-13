@@ -10,6 +10,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import {
   CreditCard,
   LayoutDashboard,
+  PackageSearch,
   Power,
   Settings,
   ShoppingBag,
@@ -38,21 +39,13 @@ const menuGroups = [
       },
       {
         icon: <ShoppingBag />,
-        label: "Gestion des categories",
-        route: "#",
-        children: [
-          { label: "Liste des categories", route: "/category" },
-          { label: "Ajouter un categorie", route: "/category/add-category" },
-        ],
+        label: "Categories",
+        route: "/category",
       },
       {
-        icon: <ShoppingBag />,
-        label: "Gestion des produits",
-        route: "#",
-        children: [
-          { label: "Liste des produits", route: "/products" },
-          { label: "Ajouter un produit", route: "/products/add-product" },
-        ],
+        icon: <PackageSearch />,
+        label: "Produits",
+        route: "/products",
       },
       {
         icon: <Truck />,

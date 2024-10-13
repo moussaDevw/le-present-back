@@ -1,111 +1,154 @@
-import { Product } from "@/types/product";
-import { Delete, DeleteIcon, Eye, Trash2 } from "lucide-react";
-import Image from "next/image";
+"use client";
 
-const productData: Product[] = [
-  {
-    image: "/images/product/product-01.png",
-    name: "Apple Watch Series 7",
-    category: "Electronics",
-    price: 296,
-    sold: 22,
-    profit: 45,
-  },
-  {
-    image: "/images/product/product-02.png",
-    name: "Macbook Pro M1",
-    category: "Electronics",
-    price: 546,
-    sold: 12,
-    profit: 125,
-  },
-  {
-    image: "/images/product/product-03.png",
-    name: "Dell Inspiron 15",
-    category: "Electronics",
-    price: 443,
-    sold: 64,
-    profit: 247,
-  },
-  {
-    image: "/images/product/product-04.png",
-    name: "HP Probook 450",
-    category: "Electronics",
-    price: 499,
-    sold: 72,
-    profit: 103,
-  },
-];
+import { NotificationToast } from "@/components/Toast/Toast";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useRootedContext } from "@/hooks/context/useContext";
+import { useDeleteProductData, useProductsData } from "@/hooks/useProductsData";
+import { Product } from "@/types/product";
+import { LoaderCircle, PlusIcon, SquarePen, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { Fragment, useEffect, useState } from "react";
+import { AddProduct } from "../AddProduct/AddProduct";
+import { UpdateProduct } from "../UpdateProduct/UpdateProduct";
+import Loader from "@/components/common/Loader";
 
 const ListProduct = () => {
+  const { data: products, isLoading, isError, error } = useProductsData();
+  const [productId, setProductId] = useState<string>("");
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const { setIsDrawerOpen, isDrawerOpen, setExistingPhotoUrl } =
+    useRootedContext();
+  const {
+    mutate: deleteProduct,
+    isPending: isDeletePending,
+    isError: isDeleteError,
+    isSuccess: isDeleteSuccess,
+    error: deleteError,
+  } = useDeleteProductData();
+
+  useEffect(() => {
+    if (!isDrawerOpen) {
+      setSelectedProductId("");
+      setExistingPhotoUrl([]);
+    }
+  }, [isDrawerOpen]);
+
+  if (isLoading) return <Loader />;
+  if (isError) return <div>Error: {error.message}</div>;
+
+  const handleDeleteProduct = async (productId: string) => {
+    setProductId(productId);
+    await deleteProduct(productId);
+  };
+
+  const handleUpdateProduct = (productId: string) => {
+    setSelectedProductId(productId);
+    setIsDrawerOpen(true);
+  };
+
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-      <div className="px-4 py-6 md:px-6 xl:px-7.5">
-        <h4 className="text-xl font-semibold text-black dark:text-white">
-          List des produits
-        </h4>
-      </div>
+    <Fragment>
+      {isDeleteSuccess && (
+        <NotificationToast
+          message="Le produit a été supprimé avec succès"
+          position="top-right"
+          type="success"
+        />
+      )}
 
-      <div className="grid grid-cols-6 border-t border-stroke px-4 py-4.5 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
-        <div className="col-span-3 flex items-center">
-          <p className="font-medium">Nom du produit</p>
-        </div>
-        <div className="col-span-2 hidden items-center sm:flex">
-          <p className="font-medium">Category</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Prix</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Quantités</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Actions</p>
-        </div>
-      </div>
+      {isDeleteError && (
+        <NotificationToast
+          message={deleteError.message}
+          type="error"
+          position="top-right"
+        />
+      )}
 
-      {productData.map((product, key) => (
-        <div
-          className="grid grid-cols-6 border-t border-stroke px-4 py-4.5 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-          key={key}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Liste des catégories</h2>
+        <Button
+          className="hover:bg-primary-dark bg-black-2 text-white"
+          onClick={() => setIsDrawerOpen(true)}
         >
-          <div className="col-span-3 flex items-center">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="h-12.5 w-15 rounded-md">
-                <Image
-                  src={product.image}
-                  width={60}
-                  height={50}
-                  alt="Product"
-                />
-              </div>
-              <p className="text-sm text-black dark:text-white">
+          Ajouter un produit <PlusIcon className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
+      <Table className="w-full bg-white">
+        <TableCaption>Liste des produits</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-center">Image</TableHead>
+            <TableHead className="text-center">Nom du produit</TableHead>
+            <TableHead className="text-center">Quantité</TableHead>
+            <TableHead className="text-center">Prix</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.map((product: Product) => (
+            <TableRow key={product.id}>
+              <TableCell>
+                <div className="mx-auto h-20 w-20 overflow-hidden rounded-lg">
+                  {product.images[0] && (
+                    <Image
+                      src={product.images[0].url}
+                      alt={`Image de ${product.name}`}
+                      width={80}
+                      height={80}
+                      className="h-full w-full rounded object-cover"
+                    />
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="text-center font-medium">
                 {product.name}
-              </p>
-            </div>
-          </div>
-          <div className="col-span-2 hidden items-center sm:flex">
-            <p className="text-sm text-black dark:text-white">
-              {product.category}
-            </p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="text-sm text-black dark:text-white">
-              ${product.price}
-            </p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="text-sm text-black dark:text-white">{product.sold}</p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="flex w-1/2 justify-around text-sm">
-              <Trash2 className="h-4 w-4 cursor-pointer text-red" />
-              <Eye className="h-4 w-4" />
-            </p>
-          </div>
-        </div>
-      ))}
-    </div>
+              </TableCell>
+              <TableCell className="text-center">{product.quantity}</TableCell>
+              <TableCell className="text-center">
+                {product.price} FCFA
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center justify-center gap-4">
+                  {isDeletePending && product.id === productId ? (
+                    <LoaderCircle className="h-4 w-4 animate-spin text-orange-500" />
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4 text-red" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleUpdateProduct(product.id)}
+                    className="hover:text-primary-dark text-black"
+                  >
+                    <SquarePen className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      {isDrawerOpen && !selectedProductId && <AddProduct />}
+      {isDrawerOpen && selectedProductId && (
+        <UpdateProduct productId={selectedProductId} />
+      )}
+    </Fragment>
   );
 };
 

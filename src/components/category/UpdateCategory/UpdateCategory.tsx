@@ -1,9 +1,9 @@
 import { useArticleData, useUpdateArticleData } from "@/hooks/useArticlesData";
 import { FormCategory } from "../FormCategory/FormCategory";
 import Loader from "@/components/common/Loader";
-import { ModalL } from "@/components/Modal/Modal";
-import { useContext, useEffect } from "react";
-import { RootedContext } from "@/hooks/context/useContext";
+import { useEffect } from "react";
+import { useRootedContext } from "@/hooks/context/useContext";
+import { DashboardRight } from "@/components/DasboardRight/DashboardRight";
 
 interface UpdateCategoryProps {
   articleId: string;
@@ -11,7 +11,7 @@ interface UpdateCategoryProps {
 
 export const UpdateCategory = ({ articleId }: UpdateCategoryProps) => {
   const { mutate, isPending, isSuccess } = useUpdateArticleData();
-  const { setOpenModal } = useContext(RootedContext);
+  const { setIsDrawerOpen } = useRootedContext();
   const {
     data: article,
     isLoading,
@@ -22,9 +22,9 @@ export const UpdateCategory = ({ articleId }: UpdateCategoryProps) => {
 
   useEffect(() => {
     if (isSuccess) {
-      setOpenModal(false);
+      setIsDrawerOpen(false);
     }
-  }, [isSuccess, setOpenModal]);
+  }, [isSuccess, setIsDrawerOpen]);
 
   if (isLoading) return <Loader />;
 
@@ -39,15 +39,14 @@ export const UpdateCategory = ({ articleId }: UpdateCategoryProps) => {
   };
 
   return (
-    <ModalL title="Modifier la catégorie" cancelButton="Annuler">
+    <DashboardRight>
       <FormCategory
-        title="Modifier la catégorie"
         onSubmit={onSubmit}
         isSuccess={isSuccess}
         isPending={isPending}
         btnString="Modifier une catégorie"
         initialValues={article}
       />
-    </ModalL>
+    </DashboardRight>
   );
 };

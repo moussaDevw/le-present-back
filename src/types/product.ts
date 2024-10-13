@@ -2,7 +2,7 @@ import { Image } from "./image";
 
 export type Product = {
   id: string;
-  image: Image[];
+  images: Image[];
   name: string;
   article: string;
   price: number;

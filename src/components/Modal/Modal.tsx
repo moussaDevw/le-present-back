@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { RootedContext } from "@/hooks/context/useContext";
+import { RootedContext, useRootedContext } from "@/hooks/context/useContext";
 import { useContext } from "react";
 
 interface ModalProps {
@@ -25,12 +25,12 @@ export const ModalL = ({
   cancelButton,
   confirmButton,
 }: ModalProps) => {
-  const { openModal, setOpenModal } = useContext(RootedContext);
+  const { openModal, setOpenModal } = useRootedContext();
 
   return (
     <AlertDialog open={openModal}>
       <AlertDialogTrigger asChild>j</AlertDialogTrigger>
-      <AlertDialogContent className="z-50 m-auto max-w-max bg-white">
+      <AlertDialogContent className="z-50 m-auto bg-white">
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{children}</AlertDialogDescription>

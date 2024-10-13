@@ -1,5 +1,6 @@
 import { useAddArticleData } from "@/hooks/useArticlesData";
 import { FormCategory } from "../FormCategory/FormCategory";
+import { DashboardRight } from "@/components/DasboardRight/DashboardRight";
 
 export const AddCategory = () => {
   const { mutate, isPending, isSuccess } = useAddArticleData();
@@ -13,12 +14,13 @@ export const AddCategory = () => {
   };
 
   return (
-    <FormCategory
-      title="Ajouter une catégorie"
-      onSubmit={onSubmit}
-      isSuccess={isSuccess}
-      isPending={isPending}
-      btnString="Ajouter la catégorie"
-    />
+    <DashboardRight>
+      <FormCategory 
+        onSubmit={onSubmit}
+        isSuccess={isSuccess}
+        isPending={isPending}
+        btnString="Ajouter la catégorie"
+      />
+    </DashboardRight>
   );
 };
